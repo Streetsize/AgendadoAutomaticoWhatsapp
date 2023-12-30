@@ -1,0 +1,58 @@
+let numerosTelefonicos = []; let numerosExistentes = [];
+let descargaRealizada = false;
+
+function extraerNumeros() {
+  const chats = document.querySelectorAll('div[role="gridcell"] span[dir="auto"]');
+
+  chats.forEach((chat) => {
+    const texto = chat.textContent.trim();
+    if (texto.startsWith('+') && texto.match(/[0-9]+/g)) {
+      const numero = texto;
+      if (!numerosExistentes.includes(numero)) { // Verificar si el número ya existe
+        numerosTelefonicos.push({
+          nombre: `cliente ${numerosTelefonicos.length + 1}`,
+          numero: numero,
+        });
+        numerosExistentes.push(numero); // Agregar el número a la lista de existentes
+      }
+    }
+  });
+
+  if (numerosTelefonicos.length === 0) {
+    console.log('No se encontraron números de teléfono.');
+  }
+
+  if (!descargaRealizada) {
+    setTimeout(descargarNumeros, 60000); // TIEMPO 1 MINUTO SI DESEAS PONER 2 MINUTOS CAMBIA EL 60000 POR 120000
+    descargaRealizada = true; 
+  }
+}
+
+
+
+function descargarNumeros() {
+  if (numerosTelefonicos.length === 0) {
+    console.log('No hay números para descargar.');
+    return;
+  }
+
+  const encabezado = 'Name,Given Name,Additional Name,Family Name,Yomi Name,Given Name Yomi,Additional Name Yomi,Family Name Yomi,Name Prefix,Name Suffix,Initials,Nickname,Short Name,Maiden Name,Birthday,Gender,Location,Billing Information,Directory Server,Mileage,Occupation,Hobby,Sensitivity,Priority,Subject,Notes,Language,Photo,Group Membership,Phone 1 - Type,Phone 1 - Value,Organization 1 - Type,Organization 1 - Name,Organization 1 - Yomi Name,Organization 1 - Title,Organization 1 - Department,Organization 1 - Symbol,Organization 1 - Location,Organization 1 - Job Description';
+  const contenido = numerosTelefonicos.map(({ nombre, numero }) => `${nombre},${",".repeat(28)},${numero}`).join('\n');
+
+  const csvContent = `${encabezado}\n${contenido}`;
+
+  const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + csvContent);
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', 'numeros_telefonicos.csv');
+  document.body.appendChild(link);
+
+  link.click();
+}
+
+function ejecutarExtraccionRepetida() {
+  setInterval(extraerNumeros, 500); // 5000 milisegundos = 5 segundos
+}
+
+extraerNumeros();
+ejecutarExtraccionRepetida();
